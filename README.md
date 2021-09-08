@@ -8,6 +8,8 @@ This is an example CDK project that shows how you can set up an authenticated st
 - You publish web content by committing it to a private GitHub repository
 - The GitHub commit triggers AWS CodePipeline, and the new content is automatically uploaded to S3
 
+Latest code version is available at: [https://github.com/aws-samples/authenticated-static-site](https://github.com/aws-samples/authenticated-static-site)
+
 ### Architecture diagram
 
 ![Architecture](architecture.png)
@@ -42,34 +44,36 @@ Take notes of the following, you need these in the next step:
 ### 2. Run CDK deployment
 
 - Install dependencies:
-
-    npm install
+```
+npm install
+```
 
 - Run deployment. Provide the parameters from the the prior step:
 
-    cdk deploy --all \
-            --parameters GitHubOwner=<repository owner> \
-            --parameters GitHubRepo=<repository name> \
-            --parameters GitHubBranch=<branch name> \
-            --parameters GitHubConnectionARN=<connection ARN>
-
+```
+cdk deploy --all \
+        --parameters GitHubOwner=<repository owner> \
+        --parameters GitHubRepo=<repository name> \
+        --parameters GitHubBranch=<branch name> \
+        --parameters GitHubConnectionARN=<connection ARN>
+```
 
 NB: the first time the command is run you may get something similar to:
-
-    AuthenticatedStaticSiteStack: deploying...
-    The template for stack "AuthenticatedStaticSiteStack" is 54KiB. Templates larger than 50KiB must be uploaded to S3.
-    Run the following command in order to setup an S3 bucket in this environment, and then re-deploy:
-        $ cdk bootstrap aws://123456789012/eu-west-1
-
+```
+AuthenticatedStaticSiteStack: deploying...
+The template for stack "AuthenticatedStaticSiteStack" is 54KiB. Templates larger than 50KiB must be uploaded to S3.
+Run the following command in order to setup an S3 bucket in this environment, and then re-deploy:
+    $ cdk bootstrap aws://123456789012/eu-west-1
+```
 Just run the displayed bootstrap command and then rerun the deployment.
 It will create a S3 bucket used to transfert the code to AWS.
 
 
 
 After the deployment, the outputs of the CloudFormation stack are displayed, amongst which the URL with which you can access your web content.
-
-    http://<your cloudfront prefix>.cloudfront.net/
-
+```
+http://<your cloudfront prefix>.cloudfront.net/
+```
 Note that if you go there, you'll be redirect to Cognito to sign-in.
 
 ### 3. Create users
@@ -84,8 +88,9 @@ While you're at it, also commit a file notfound.html––that will be shown if 
 ## Clean Up
 
 Clean up the stack and all resource like so:
-
-    cdk destroy --all
+```
+cdk destroy --all
+```
 
 Note1: that the Lambda@Edge functions might fail deletion at first, because they are replicated to all regions. After a little while, simply try deleting them again, by deleting the stack from the CloudFormation console.
 Note2: the provided code will try to remove: S3 Buckets, Cognito User Pool. It will fail if these resources are not empty.

@@ -7,11 +7,11 @@ export function addSARMetadata(stack: cdk.Stack) {
       Description:
         "Publish content of a GitHub repo to a static site hosted on S3/CloudFront and enforce Cognito authentciation to access it.",
       Author: "Otto Kruse, Jerome Pasini",
-      LicenseUrl: "LICENSE.txt",
+      LicenseUrl: "LICENSE",
       ReadmeUrl: "README.md",
-      SemanticVersion: "0.0.1",
+      SemanticVersion: "1.0.0",
       SourceCodeUrl:
-        "https://gitlab.aws.dev/authenticated-static-site/authenticated-static-site",
+        "https://github.com/aws-samples/authenticated-static-site",
     },
   };
   stack.templateOptions.metadata = metadata;
