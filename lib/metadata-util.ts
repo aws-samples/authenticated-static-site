@@ -9,7 +9,7 @@ export function addSARMetadata(stack: cdk.Stack) {
       Author: "Otto Kruse and Jerome Pasini",
       LicenseUrl: "LICENSE",
       ReadmeUrl: "README.md",
-      SemanticVersion: "1.0.0",
+      SemanticVersion: "1.0.1",
       SourceCodeUrl: "https://github.com/aws-samples/authenticated-static-site",
     },
   };

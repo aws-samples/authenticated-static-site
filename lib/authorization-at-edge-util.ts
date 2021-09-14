@@ -34,7 +34,7 @@ export function deployAuthorizationAtEdge(
     location: {
       applicationId:
         "arn:aws:serverlessrepo:us-east-1:520945424137:applications/cloudfront-authorization-at-edge",
-      semanticVersion: "2.0.9",
+      semanticVersion: "2.0.11",
     },
     parameters: {
       CreateCloudFrontDistribution: "false",
@@ -45,6 +45,7 @@ export function deployAuthorizationAtEdge(
       RedirectPathAuthRefresh: props.paths.redirectPathAuthRefresh,
       RedirectPathSignIn: props.paths.redirectPathSignIn,
       SignOutUrl: props.paths.signOutUrl,
+      Version: "2.0.11",
     },
   });
   authAtEdge.node.addDependency(props.userPoolDomain); // authorization-at-edge requires the domain to be created
@@ -87,7 +88,6 @@ export function deployAuthorizationAtEdge(
       RedirectPathSignOut: props.paths.redirectPathSignOut,
       AlternateDomainNames: "",
       OAuthScopes: props.oAuthScopes,
-      Version: "2.0.9",
     },
   });
 
