@@ -1,14 +1,15 @@
 # How to
 
-* https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-publishing-applications.html
+- https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-publishing-applications.html
 
 # Prerequisite
 
-* SAM CLI installed
-* single stack
+- SAM CLI installed
+- single stack
 
 # deploy
 
-    cdk synth
-    sam validate -t cdk.out/PublishedAuthenticatedStaticSiteStack.template.json 
-    sam publish -t cdk.out/PublishedAuthenticatedStaticSiteStack.template.json --region $AWS_DEFAULT_REGION --profile $AWS_PROFILE
+    cdk synth --version-reporting false > template.yaml
+    sam validate
+    sam package --region $AWS_DEFAULT_REGION --profile $AWS_PROFILE --resolve-s3 --output-template-file packaged.yaml
+    sam publish -t packaged.yaml --region $AWS_DEFAULT_REGION --profile $AWS_PROFILE

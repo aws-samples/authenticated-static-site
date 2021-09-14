@@ -7,3 +7,7 @@ node_modules
 .cdk.staging
 cdk.out
 jerome_readme.md
+
+# SAM files
+template.yaml
+packaged.yaml
