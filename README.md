@@ -41,9 +41,17 @@ Take notes of the following, you need these in the next step:
 - branch name to trigger off of
 - connection ARN. After setting up the connection, you can find the connection ARN in the console [here](https://eu-west-1.console.aws.amazon.com/codesuite/settings/connections).
 
-### 2. Run CDK deployment
+### 2. Deploy
+
+There's 2 methods to deploy this app:
+
+- Deploy from the Serverless Application Repository. This is probably the easiest way. Navigate to the [application in the Serverless Application Repository](https://console.aws.amazon.com/lambda/home?region=us-east-1#/create/app?applicationId=arn:aws:serverlessrepo:us-east-1:780040884205:applications/AuthenticatedStaticSite) and click Deploy.
+- Deploy with AWS CDK. Follow the steps below.
+
+#### AWS CDK Deployment
 
 - Install dependencies:
+
 ```
 npm install
 ```
@@ -59,21 +67,23 @@ cdk deploy --all \
 ```
 
 NB: the first time the command is run you may get something similar to:
+
 ```
 AuthenticatedStaticSiteStack: deploying...
 The template for stack "AuthenticatedStaticSiteStack" is 54KiB. Templates larger than 50KiB must be uploaded to S3.
 Run the following command in order to setup an S3 bucket in this environment, and then re-deploy:
     $ cdk bootstrap aws://123456789012/eu-west-1
 ```
+
 Just run the displayed bootstrap command and then rerun the deployment.
 It will create a S3 bucket used to transfert the code to AWS.
 
-
-
 After the deployment, the outputs of the CloudFormation stack are displayed, amongst which the URL with which you can access your web content.
+
 ```
 http://<your cloudfront prefix>.cloudfront.net/
 ```
+
 Note that if you go there, you'll be redirect to Cognito to sign-in.
 
 ### 3. Create users
@@ -87,7 +97,10 @@ While you're at it, also commit a file notfound.html––that will be shown if 
 
 ## Clean Up
 
-Clean up the stack and all resource like so:
+If you deployed the application from the Serverless Application Repository, then navigate to AWS CloudFormation in the AWS console and delete the stack.
+
+If you used CDK to deploy, you can also clean up the stack and all resource like so:
+
 ```
 cdk destroy --all
 ```
@@ -102,4 +115,4 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
