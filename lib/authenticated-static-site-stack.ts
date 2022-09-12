@@ -1,10 +1,13 @@
-import * as cdk from "@aws-cdk/core";
-import * as cognito from "@aws-cdk/aws-cognito";
+import { Construct } from "constructs";
+import * as cdk from "aws-cdk-lib";
+import {
+  aws_cognito as cognito,
+} from "aws-cdk-lib";
 import { deployAuthorizationAtEdge } from "./authorization-at-edge-util";
 import { StaticSiteStack, StaticSiteStackProps } from "./static-site-stack";
 
 export abstract class AuthenticatedStaticSiteStack extends StaticSiteStack {
-  constructor(scope: cdk.Construct, id: string, props?: StaticSiteStackProps) {
+  constructor(scope: Construct, id: string, props?: StaticSiteStackProps) {
     super(scope, id, props);
 
     const userPool = new cognito.UserPool(this, "UserPool", {

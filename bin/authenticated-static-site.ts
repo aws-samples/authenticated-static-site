@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import "source-map-support/register";
-import * as cdk from "@aws-cdk/core";
+import * as cdk from "aws-cdk-lib";
 import { addSARMetadata } from "../lib/metadata-util";
 import { PublishedAuthenticatedStaticSiteStack } from "../lib/published-authenticated-static-site-stack";
 

@@ -1,9 +1,11 @@
-import * as cdk from "@aws-cdk/core";
-import * as s3 from "@aws-cdk/aws-s3";
-import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as origins from "@aws-cdk/aws-cloudfront-origins";
-import * as iam from "@aws-cdk/aws-iam";
-import { PriceClass } from "@aws-cdk/aws-cloudfront";
+import { Construct } from "constructs";
+import * as cdk from "aws-cdk-lib";
+import {
+  aws_s3 as s3,
+  aws_iam as iam,
+  aws_cloudfront as cloudfront,
+  aws_cloudfront_origins as origins,
+} from "aws-cdk-lib";
 
 export interface StaticSiteStackProps extends cdk.StackProps {
   bucketName?: string;
@@ -13,7 +15,7 @@ export abstract class StaticSiteStack extends cdk.Stack {
   public readonly bucket: s3.Bucket;
   public readonly distribution: cloudfront.Distribution;
 
-  constructor(scope: cdk.Construct, id: string, props?: StaticSiteStackProps) {
+  constructor(scope: Construct, id: string, props?: StaticSiteStackProps) {
     super(scope, id, props);
 
     this.bucket = new s3.Bucket(this, "StaticSiteBucket", {
@@ -36,7 +38,7 @@ export abstract class StaticSiteStack extends cdk.Stack {
       },
       defaultRootObject: "index.html",
       errorResponses: [{ httpStatus: 404, responsePagePath: "/notfound.html" }],
-      priceClass: PriceClass.PRICE_CLASS_100, // reduce cost by using only USA and EU edges nodes
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // reduce cost by using only USA and EU edges nodes
     });
 
     // We'll allow the Origin Access Identity the ListBucket privilege,

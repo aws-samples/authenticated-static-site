@@ -1,13 +1,17 @@
-import { expect as expectCDK, matchTemplate, MatchStyle } from '@aws-cdk/assert';
-import * as cdk from '@aws-cdk/core';
-import * as AuthenticatedStaticSite from '../lib/authenticated-static-site-stack';
+import { Template, } from "aws-cdk-lib/assertions";
+import * as cdk from "aws-cdk-lib";
+import { PublishedAuthenticatedStaticSiteStack } from "../lib/published-authenticated-static-site-stack";
 
 test('Empty Stack', () => {
     const app = new cdk.App();
     // WHEN
-    const stack = new AuthenticatedStaticSite.AuthenticatedStaticSiteStack(app, 'MyTestStack');
+    const stack = new PublishedAuthenticatedStaticSiteStack(
+      app,
+      "AuthenticatedStaticSiteStack",
+      {
+        bucketName: undefined, // name must be uniq
+      }
+    );
     // THEN
-    expectCDK(stack).to(matchTemplate({
-      "Resources": {}
-    }, MatchStyle.EXACT))
+    expect(Template.fromStack(stack)).toMatchSnapshot();
 });
