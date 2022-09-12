@@ -1,0 +1,1625 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Empty Stack 1`] = `
+Object {
+  "Outputs": Object {
+    "CloudFrontURL": Object {
+      "Description": "The path of the site",
+      "Export": Object {
+        "Name": "CloudFrontURL",
+      },
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "https://",
+            Object {
+              "Fn::GetAtt": Array [
+                "StaticSite6C1A1D1C",
+                "DomainName",
+              ],
+            },
+          ],
+        ],
+      },
+    },
+  },
+  "Parameters": Object {
+    "BootstrapVersion": Object {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "GitHubBranch": Object {
+      "Description": "The name of the GitHub branch.",
+      "Type": "String",
+    },
+    "GitHubConnectionARN": Object {
+      "Description": "The name of the GitHub Connection ARN in AWS Code Suite.",
+      "Type": "String",
+    },
+    "GitHubOwner": Object {
+      "Description": "The name of the GitHub repo owner.",
+      "Type": "String",
+    },
+    "GitHubRepo": Object {
+      "Description": "The name of the GitHub repository.",
+      "Type": "String",
+    },
+  },
+  "Resources": Object {
+    "AuthorizationAtEdge": Object {
+      "DependsOn": Array [
+        "UserPoolHostedUI33DCAA33",
+      ],
+      "Properties": Object {
+        "Location": Object {
+          "ApplicationId": "arn:aws:serverlessrepo:us-east-1:520945424137:applications/cloudfront-authorization-at-edge",
+          "SemanticVersion": "2.0.12",
+        },
+        "Parameters": Object {
+          "CreateCloudFrontDistribution": "false",
+          "EnableSPAMode": "false",
+          "OAuthScopes": "profile,phone,email,openid,aws.cognito.signin.user.admin",
+          "RedirectPathAuthRefresh": "/refreshauth",
+          "RedirectPathSignIn": "/parseauth",
+          "SignOutUrl": "/signout",
+          "UserPoolArn": Object {
+            "Fn::GetAtt": Array [
+              "UserPool6BA7E5F2",
+              "Arn",
+            ],
+          },
+          "UserPoolClientId": Object {
+            "Ref": "UserPoolLambdaAtEdgeDE957B39",
+          },
+          "Version": "2.0.12",
+        },
+      },
+      "Type": "AWS::Serverless::Application",
+    },
+    "DeleteOldFilesProject7C59E134": Object {
+      "Properties": Object {
+        "Artifacts": Object {
+          "Type": "CODEPIPELINE",
+        },
+        "Cache": Object {
+          "Type": "NO_CACHE",
+        },
+        "EncryptionKey": "alias/aws/s3",
+        "Environment": Object {
+          "ComputeType": "BUILD_GENERAL1_SMALL",
+          "EnvironmentVariables": Array [
+            Object {
+              "Name": "S3_BUCKET_NAME",
+              "Type": "PLAINTEXT",
+              "Value": Object {
+                "Ref": "StaticSiteBucket8958EE3F",
+              },
+            },
+          ],
+          "Image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
+          "ImagePullCredentialsType": "CODEBUILD",
+          "PrivilegedMode": false,
+          "Type": "LINUX_CONTAINER",
+        },
+        "ServiceRole": Object {
+          "Fn::GetAtt": Array [
+            "DeleteOldFilesProjectRoleA860C20E",
+            "Arn",
+          ],
+        },
+        "Source": Object {
+          "BuildSpec": "version: \\"0.2\\"
+phases:
+  build:
+    commands:
+      - |-
+        echo '#!/bin/bash -e
+
+        if [ -z \\"$S3_BUCKET_NAME\\" ]; then
+            echo \\"ERROR: Environment variable S3_BUCKET_NAME is not set\\"
+            exit 1
+        fi
+        echo \\"Will clean up S3 bucket: \${S3_BUCKET_NAME}\\"
+
+        # Because we use an associative array we need Bash 4 or higher
+        if [ -z \\"\${BASH_VERSINFO}\\" ]; then
+            echo \\"ERROR: Bash version 4 or higher is needed to run this script. You are not running bash.\\"
+            exit 1
+        elif [ \\"\${BASH_VERSINFO:-0}\\" -lt 4 ]; then
+            echo \\"ERROR: Bash version 4 or higher is needed to run this script. You are running: \${BASH_VERSINFO}\\"
+            exit 1
+        fi
+        echo \\"Running bash version: \${BASH_VERSINFO}\\"
+
+        # Build Hash map of current files
+        declare -A NEW_FILES
+        for ENTRY in $(find . -type f); do
+            NEW_FILES[\\"\${ENTRY}\\"]=\\"\${ENTRY}\\"
+        done
+        echo \\"Files locally: \${!NEW_FILES[@]}\\"
+
+        # Get list of S3 files
+        S3_FILES=$(aws s3 ls \\"s3://\${S3_BUCKET_NAME}\\" --recursive | awk '\\\\''{print $4}'\\\\'' | tr '\\\\''\\\\n'\\\\'' '\\\\'' '\\\\'')
+        echo \\"Files on S3: \${S3_FILES}\\"
+
+        # Loop through files on S3 and delete ones we don'\\\\''t have locally
+        for KEY in $S3_FILES; do
+            if [ -z \\"\${NEW_FILES[\\"./\${KEY}\\"]}\\" ]; then
+                echo \\"S3 file does not exist locally: ./\${KEY}\\"
+                aws s3 rm \\"s3://\${S3_BUCKET_NAME}/\${KEY}\\"
+            fi
+        done
+        ' > ./delete-old-files.sh
+      - chmod +x ./delete-old-files.sh
+      - ./delete-old-files.sh
+",
+          "Type": "CODEPIPELINE",
+        },
+      },
+      "Type": "AWS::CodeBuild::Project",
+    },
+    "DeleteOldFilesProjectRoleA860C20E": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "codebuild.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DeleteOldFilesProjectRoleDefaultPolicyC58CF1D9": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      Object {
+                        "Ref": "DeleteOldFilesProject7C59E134",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      Object {
+                        "Ref": "DeleteOldFilesProject7C59E134",
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "codebuild:CreateReportGroup",
+                "codebuild:CreateReport",
+                "codebuild:UpdateReport",
+                "codebuild:BatchPutTestCases",
+                "codebuild:BatchPutCodeCoverages",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:",
+                    Object {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":codebuild:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":report-group/",
+                    Object {
+                      "Ref": "DeleteOldFilesProject7C59E134",
+                    },
+                    "-*",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSiteBucket8958EE3F",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSiteBucket8958EE3F",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineArtifactsBucketDEC3349B",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSitePipelineArtifactsBucketDEC3349B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "DeleteOldFilesProjectRoleDefaultPolicyC58CF1D9",
+        "Roles": Array [
+          Object {
+            "Ref": "DeleteOldFilesProjectRoleA860C20E",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "InvalidateProjectE0DD82CD": Object {
+      "Properties": Object {
+        "Artifacts": Object {
+          "Type": "CODEPIPELINE",
+        },
+        "Cache": Object {
+          "Type": "NO_CACHE",
+        },
+        "EncryptionKey": "alias/aws/s3",
+        "Environment": Object {
+          "ComputeType": "BUILD_GENERAL1_SMALL",
+          "EnvironmentVariables": Array [
+            Object {
+              "Name": "CLOUDFRONT_ID",
+              "Type": "PLAINTEXT",
+              "Value": Object {
+                "Ref": "StaticSite6C1A1D1C",
+              },
+            },
+          ],
+          "Image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
+          "ImagePullCredentialsType": "CODEBUILD",
+          "PrivilegedMode": false,
+          "Type": "LINUX_CONTAINER",
+        },
+        "ServiceRole": Object {
+          "Fn::GetAtt": Array [
+            "InvalidateProjectRole11E7B1D3",
+            "Arn",
+          ],
+        },
+        "Source": Object {
+          "BuildSpec": "{
+  \\"version\\": \\"0.2\\",
+  \\"phases\\": {
+    \\"build\\": {
+      \\"commands\\": [
+        \\"aws cloudfront create-invalidation --distribution-id \${CLOUDFRONT_ID} --paths \\\\\\"/*\\\\\\"\\"
+      ]
+    }
+  }
+}",
+          "Type": "CODEPIPELINE",
+        },
+      },
+      "Type": "AWS::CodeBuild::Project",
+    },
+    "InvalidateProjectRole11E7B1D3": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "codebuild.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "InvalidateProjectRoleDefaultPolicy33B25CA1": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      Object {
+                        "Ref": "InvalidateProjectE0DD82CD",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":logs:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":log-group:/aws/codebuild/",
+                      Object {
+                        "Ref": "InvalidateProjectE0DD82CD",
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "codebuild:CreateReportGroup",
+                "codebuild:CreateReport",
+                "codebuild:UpdateReport",
+                "codebuild:BatchPutTestCases",
+                "codebuild:BatchPutCodeCoverages",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:",
+                    Object {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":codebuild:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":report-group/",
+                    Object {
+                      "Ref": "InvalidateProjectE0DD82CD",
+                    },
+                    "-*",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": "cloudfront:CreateInvalidation",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:cloudfront::",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":distribution/",
+                    Object {
+                      "Ref": "StaticSite6C1A1D1C",
+                    },
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineArtifactsBucketDEC3349B",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSitePipelineArtifactsBucketDEC3349B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "InvalidateProjectRoleDefaultPolicy33B25CA1",
+        "Roles": Array [
+          Object {
+            "Ref": "InvalidateProjectRole11E7B1D3",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RedirectUriUpdates": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "AlternateDomainNames": "",
+        "CloudFrontDistributionDomainName": Object {
+          "Fn::GetAtt": Array [
+            "StaticSite6C1A1D1C",
+            "DomainName",
+          ],
+        },
+        "OAuthScopes": Array [
+          "profile",
+          "phone",
+          "email",
+          "openid",
+          "aws.cognito.signin.user.admin",
+        ],
+        "RedirectPathSignIn": "/parseauth",
+        "RedirectPathSignOut": "/",
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "AuthorizationAtEdge",
+            "Outputs.UserPoolClientUpdateHandler",
+          ],
+        },
+        "UserPoolArn": Object {
+          "Fn::GetAtt": Array [
+            "UserPool6BA7E5F2",
+            "Arn",
+          ],
+        },
+        "UserPoolClientId": Object {
+          "Ref": "UserPoolLambdaAtEdgeDE957B39",
+        },
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StaticSite6C1A1D1C": Object {
+      "Properties": Object {
+        "DistributionConfig": Object {
+          "CacheBehaviors": Array [
+            Object {
+              "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+              "Compress": true,
+              "LambdaFunctionAssociations": Array [
+                Object {
+                  "EventType": "viewer-request",
+                  "LambdaFunctionARN": Object {
+                    "Fn::GetAtt": Array [
+                      "AuthorizationAtEdge",
+                      "Outputs.RefreshAuthHandler",
+                    ],
+                  },
+                },
+              ],
+              "PathPattern": "/refreshauth",
+              "TargetOriginId": "AuthenticatedStaticSiteStackStaticSiteOrigin2C22DF57E",
+              "ViewerProtocolPolicy": "redirect-to-https",
+            },
+            Object {
+              "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+              "Compress": true,
+              "LambdaFunctionAssociations": Array [
+                Object {
+                  "EventType": "viewer-request",
+                  "LambdaFunctionARN": Object {
+                    "Fn::GetAtt": Array [
+                      "AuthorizationAtEdge",
+                      "Outputs.ParseAuthHandler",
+                    ],
+                  },
+                },
+              ],
+              "PathPattern": "/parseauth",
+              "TargetOriginId": "AuthenticatedStaticSiteStackStaticSiteOrigin2C22DF57E",
+              "ViewerProtocolPolicy": "redirect-to-https",
+            },
+            Object {
+              "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+              "Compress": true,
+              "LambdaFunctionAssociations": Array [
+                Object {
+                  "EventType": "viewer-request",
+                  "LambdaFunctionARN": Object {
+                    "Fn::GetAtt": Array [
+                      "AuthorizationAtEdge",
+                      "Outputs.SignOutHandler",
+                    ],
+                  },
+                },
+              ],
+              "PathPattern": "/signout",
+              "TargetOriginId": "AuthenticatedStaticSiteStackStaticSiteOrigin2C22DF57E",
+              "ViewerProtocolPolicy": "redirect-to-https",
+            },
+          ],
+          "CustomErrorResponses": Array [
+            Object {
+              "ErrorCode": 404,
+              "ResponseCode": 404,
+              "ResponsePagePath": "/notfound.html",
+            },
+          ],
+          "DefaultCacheBehavior": Object {
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "Compress": true,
+            "LambdaFunctionAssociations": Array [
+              Object {
+                "EventType": "viewer-request",
+                "LambdaFunctionARN": Object {
+                  "Fn::GetAtt": Array [
+                    "AuthorizationAtEdge",
+                    "Outputs.CheckAuthHandler",
+                  ],
+                },
+              },
+              Object {
+                "EventType": "origin-request",
+                "LambdaFunctionARN": Object {
+                  "Fn::GetAtt": Array [
+                    "AuthorizationAtEdge",
+                    "Outputs.TrailingSlashHandler",
+                  ],
+                },
+              },
+            ],
+            "TargetOriginId": "AuthenticatedStaticSiteStackStaticSiteOrigin1480206E3",
+            "ViewerProtocolPolicy": "redirect-to-https",
+          },
+          "DefaultRootObject": "index.html",
+          "Enabled": true,
+          "HttpVersion": "http2",
+          "IPV6Enabled": true,
+          "Origins": Array [
+            Object {
+              "DomainName": Object {
+                "Fn::GetAtt": Array [
+                  "StaticSiteBucket8958EE3F",
+                  "RegionalDomainName",
+                ],
+              },
+              "Id": "AuthenticatedStaticSiteStackStaticSiteOrigin1480206E3",
+              "S3OriginConfig": Object {
+                "OriginAccessIdentity": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "origin-access-identity/cloudfront/",
+                      Object {
+                        "Ref": "StaticSiteOrigin59CDB3E0",
+                      },
+                    ],
+                  ],
+                },
+              },
+            },
+            Object {
+              "CustomOriginConfig": Object {
+                "OriginProtocolPolicy": "https-only",
+                "OriginSSLProtocols": Array [
+                  "TLSv1.2",
+                ],
+              },
+              "DomainName": "example.com",
+              "Id": "AuthenticatedStaticSiteStackStaticSiteOrigin2C22DF57E",
+            },
+          ],
+          "PriceClass": "PriceClass_100",
+        },
+      },
+      "Type": "AWS::CloudFront::Distribution",
+    },
+    "StaticSiteBucket8958EE3F": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "PublicAccessBlockConfiguration": Object {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StaticSiteBucketPolicy54AA1C72": Object {
+      "Properties": Object {
+        "Bucket": Object {
+          "Ref": "StaticSiteBucket8958EE3F",
+        },
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Principal": Object {
+                "CanonicalUser": Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSiteOrigin59CDB3E0",
+                    "S3CanonicalUserId",
+                  ],
+                },
+              },
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "StaticSiteBucket8958EE3F",
+                        "Arn",
+                      ],
+                    },
+                    "/*",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": "s3:ListBucket",
+              "Effect": "Allow",
+              "Principal": Object {
+                "CanonicalUser": Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSiteOrigin59CDB3E0",
+                    "S3CanonicalUserId",
+                  ],
+                },
+              },
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "StaticSiteBucket8958EE3F",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "StaticSiteOrigin59CDB3E0": Object {
+      "Properties": Object {
+        "CloudFrontOriginAccessIdentityConfig": Object {
+          "Comment": "Allows CloudFront to reach the bucket",
+        },
+      },
+      "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+    },
+    "StaticSitePipeline6C9A0C98": Object {
+      "DependsOn": Array [
+        "StaticSitePipelineRoleDefaultPolicy4DB8B978",
+        "StaticSitePipelineRole24F8A41F",
+      ],
+      "Properties": Object {
+        "ArtifactStore": Object {
+          "Location": Object {
+            "Ref": "StaticSitePipelineArtifactsBucketDEC3349B",
+          },
+          "Type": "S3",
+        },
+        "Name": "StaticSiteUpdatePipeline",
+        "RoleArn": Object {
+          "Fn::GetAtt": Array [
+            "StaticSitePipelineRole24F8A41F",
+            "Arn",
+          ],
+        },
+        "Stages": Array [
+          Object {
+            "Actions": Array [
+              Object {
+                "ActionTypeId": Object {
+                  "Category": "Source",
+                  "Owner": "AWS",
+                  "Provider": "CodeStarSourceConnection",
+                  "Version": "1",
+                },
+                "Configuration": Object {
+                  "BranchName": Object {
+                    "Ref": "GitHubBranch",
+                  },
+                  "ConnectionArn": Object {
+                    "Ref": "GitHubConnectionARN",
+                  },
+                  "FullRepositoryId": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        Object {
+                          "Ref": "GitHubOwner",
+                        },
+                        "/",
+                        Object {
+                          "Ref": "GitHubRepo",
+                        },
+                      ],
+                    ],
+                  },
+                },
+                "Name": "GitHub_Site_Content_Source",
+                "OutputArtifacts": Array [
+                  Object {
+                    "Name": "Artifact_Source_GitHub_Site_Content_Source",
+                  },
+                ],
+                "RoleArn": Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineSourceGitHubSiteContentSourceCodePipelineActionRoleE3584761",
+                    "Arn",
+                  ],
+                },
+                "RunOrder": 1,
+              },
+            ],
+            "Name": "Source",
+          },
+          Object {
+            "Actions": Array [
+              Object {
+                "ActionTypeId": Object {
+                  "Category": "Deploy",
+                  "Owner": "AWS",
+                  "Provider": "S3",
+                  "Version": "1",
+                },
+                "Configuration": Object {
+                  "BucketName": Object {
+                    "Ref": "StaticSiteBucket8958EE3F",
+                  },
+                  "Extract": "true",
+                },
+                "InputArtifacts": Array [
+                  Object {
+                    "Name": "Artifact_Source_GitHub_Site_Content_Source",
+                  },
+                ],
+                "Name": "S3Deploy",
+                "RoleArn": Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineDeployS3DeployCodePipelineActionRoleCA80A708",
+                    "Arn",
+                  ],
+                },
+                "RunOrder": 1,
+              },
+              Object {
+                "ActionTypeId": Object {
+                  "Category": "Build",
+                  "Owner": "AWS",
+                  "Provider": "CodeBuild",
+                  "Version": "1",
+                },
+                "Configuration": Object {
+                  "ProjectName": Object {
+                    "Ref": "DeleteOldFilesProject7C59E134",
+                  },
+                },
+                "InputArtifacts": Array [
+                  Object {
+                    "Name": "Artifact_Source_GitHub_Site_Content_Source",
+                  },
+                ],
+                "Name": "DeleteOldFilesFromS3",
+                "RoleArn": Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineDeployDeleteOldFilesFromS3CodePipelineActionRole58251370",
+                    "Arn",
+                  ],
+                },
+                "RunOrder": 2,
+              },
+              Object {
+                "ActionTypeId": Object {
+                  "Category": "Build",
+                  "Owner": "AWS",
+                  "Provider": "CodeBuild",
+                  "Version": "1",
+                },
+                "Configuration": Object {
+                  "ProjectName": Object {
+                    "Ref": "InvalidateProjectE0DD82CD",
+                  },
+                },
+                "InputArtifacts": Array [
+                  Object {
+                    "Name": "Artifact_Source_GitHub_Site_Content_Source",
+                  },
+                ],
+                "Name": "InvalidateCloudFrontCache",
+                "RoleArn": Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineDeployInvalidateCloudFrontCacheCodePipelineActionRole31DFE3CE",
+                    "Arn",
+                  ],
+                },
+                "RunOrder": 3,
+              },
+            ],
+            "Name": "Deploy",
+          },
+        ],
+      },
+      "Type": "AWS::CodePipeline::Pipeline",
+    },
+    "StaticSitePipelineArtifactsBucketDEC3349B": Object {
+      "DeletionPolicy": "Retain",
+      "Properties": Object {
+        "BucketEncryption": Object {
+          "ServerSideEncryptionConfiguration": Array [
+            Object {
+              "ServerSideEncryptionByDefault": Object {
+                "SSEAlgorithm": "aws:kms",
+              },
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": Object {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "StaticSitePipelineArtifactsBucketPolicy963AF7C7": Object {
+      "Properties": Object {
+        "Bucket": Object {
+          "Ref": "StaticSitePipelineArtifactsBucketDEC3349B",
+        },
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "s3:*",
+              "Condition": Object {
+                "Bool": Object {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": Object {
+                "AWS": "*",
+              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineArtifactsBucketDEC3349B",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSitePipelineArtifactsBucketDEC3349B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "StaticSitePipelineDeployDeleteOldFilesFromS3CodePipelineActionRole58251370": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "StaticSitePipelineDeployDeleteOldFilesFromS3CodePipelineActionRoleDefaultPolicyC92F0366": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "codebuild:BatchGetBuilds",
+                "codebuild:StartBuild",
+                "codebuild:StopBuild",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "DeleteOldFilesProject7C59E134",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StaticSitePipelineDeployDeleteOldFilesFromS3CodePipelineActionRoleDefaultPolicyC92F0366",
+        "Roles": Array [
+          Object {
+            "Ref": "StaticSitePipelineDeployDeleteOldFilesFromS3CodePipelineActionRole58251370",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "StaticSitePipelineDeployInvalidateCloudFrontCacheCodePipelineActionRole31DFE3CE": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "StaticSitePipelineDeployInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicyA317B106": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "codebuild:BatchGetBuilds",
+                "codebuild:StartBuild",
+                "codebuild:StopBuild",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "InvalidateProjectE0DD82CD",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StaticSitePipelineDeployInvalidateCloudFrontCacheCodePipelineActionRoleDefaultPolicyA317B106",
+        "Roles": Array [
+          Object {
+            "Ref": "StaticSitePipelineDeployInvalidateCloudFrontCacheCodePipelineActionRole31DFE3CE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "StaticSitePipelineDeployS3DeployCodePipelineActionRoleCA80A708": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "StaticSitePipelineDeployS3DeployCodePipelineActionRoleDefaultPolicy5DFC8179": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSiteBucket8958EE3F",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSiteBucket8958EE3F",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineArtifactsBucketDEC3349B",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSitePipelineArtifactsBucketDEC3349B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StaticSitePipelineDeployS3DeployCodePipelineActionRoleDefaultPolicy5DFC8179",
+        "Roles": Array [
+          Object {
+            "Ref": "StaticSitePipelineDeployS3DeployCodePipelineActionRoleCA80A708",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "StaticSitePipelineRole24F8A41F": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "codepipeline.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "StaticSitePipelineRoleDefaultPolicy4DB8B978": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineArtifactsBucketDEC3349B",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSitePipelineArtifactsBucketDEC3349B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "StaticSitePipelineSourceGitHubSiteContentSourceCodePipelineActionRoleE3584761",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "StaticSitePipelineDeployS3DeployCodePipelineActionRoleCA80A708",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "StaticSitePipelineDeployDeleteOldFilesFromS3CodePipelineActionRole58251370",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "StaticSitePipelineDeployInvalidateCloudFrontCacheCodePipelineActionRole31DFE3CE",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StaticSitePipelineRoleDefaultPolicy4DB8B978",
+        "Roles": Array [
+          Object {
+            "Ref": "StaticSitePipelineRole24F8A41F",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "StaticSitePipelineSourceGitHubSiteContentSourceCodePipelineActionRoleDefaultPolicy847E5DE9": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "codestar-connections:UseConnection",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "GitHubConnectionARN",
+              },
+            },
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "StaticSitePipelineArtifactsBucketDEC3349B",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "StaticSitePipelineArtifactsBucketDEC3349B",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "s3:PutObjectAcl",
+                "s3:PutObjectVersionAcl",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "StaticSitePipelineArtifactsBucketDEC3349B",
+                        "Arn",
+                      ],
+                    },
+                    "/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StaticSitePipelineSourceGitHubSiteContentSourceCodePipelineActionRoleDefaultPolicy847E5DE9",
+        "Roles": Array [
+          Object {
+            "Ref": "StaticSitePipelineSourceGitHubSiteContentSourceCodePipelineActionRoleE3584761",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "StaticSitePipelineSourceGitHubSiteContentSourceCodePipelineActionRoleE3584761": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "UserPool6BA7E5F2": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "AccountRecoverySetting": Object {
+          "RecoveryMechanisms": Array [
+            Object {
+              "Name": "verified_phone_number",
+              "Priority": 1,
+            },
+            Object {
+              "Name": "verified_email",
+              "Priority": 2,
+            },
+          ],
+        },
+        "AdminCreateUserConfig": Object {
+          "AllowAdminCreateUserOnly": true,
+        },
+        "EmailVerificationMessage": "The verification code to your new account is {####}",
+        "EmailVerificationSubject": "Verify your new account",
+        "SmsVerificationMessage": "The verification code to your new account is {####}",
+        "VerificationMessageTemplate": Object {
+          "DefaultEmailOption": "CONFIRM_WITH_CODE",
+          "EmailMessage": "The verification code to your new account is {####}",
+          "EmailSubject": "Verify your new account",
+          "SmsMessage": "The verification code to your new account is {####}",
+        },
+      },
+      "Type": "AWS::Cognito::UserPool",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "UserPoolHostedUI33DCAA33": Object {
+      "Properties": Object {
+        "Domain": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "auth-",
+              Object {
+                "Fn::Select": Array [
+                  2,
+                  Object {
+                    "Fn::Split": Array [
+                      "/",
+                      Object {
+                        "Ref": "AWS::StackId",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          ],
+        },
+        "UserPoolId": Object {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::Cognito::UserPoolDomain",
+    },
+    "UserPoolLambdaAtEdgeDE957B39": Object {
+      "Properties": Object {
+        "AllowedOAuthFlows": Array [
+          "code",
+        ],
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "AllowedOAuthScopes": Array [
+          "profile",
+          "phone",
+          "email",
+          "openid",
+          "aws.cognito.signin.user.admin",
+        ],
+        "CallbackURLs": Array [
+          "https://example.com/will-be-replaced",
+        ],
+        "GenerateSecret": true,
+        "SupportedIdentityProviders": Array [
+          "COGNITO",
+        ],
+        "UserPoolId": Object {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::Cognito::UserPoolClient",
+    },
+  },
+  "Rules": Object {
+    "CheckBootstrapVersion": Object {
+      "Assertions": Array [
+        Object {
+          "Assert": Object {
+            "Fn::Not": Array [
+              Object {
+                "Fn::Contains": Array [
+                  Array [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  Object {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+  "Transform": "AWS::Serverless-2016-10-31",
+}
+`;

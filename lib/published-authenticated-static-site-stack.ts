@@ -1,8 +1,12 @@
-import * as cdk from "@aws-cdk/core";
-import * as codepipeline from "@aws-cdk/aws-codepipeline";
-import * as codepipelineActions from "@aws-cdk/aws-codepipeline-actions";
-import * as codebuild from "@aws-cdk/aws-codebuild";
-import * as iam from "@aws-cdk/aws-iam";
+
+import { Construct } from "constructs";
+import * as cdk from "aws-cdk-lib";
+import {
+  aws_codepipeline as codepipeline,
+  aws_codepipeline_actions as codepipelineActions,
+  aws_codebuild as codebuild,
+  aws_iam as iam,
+} from "aws-cdk-lib";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -10,7 +14,7 @@ import { StaticSiteStackProps } from "./static-site-stack";
 import { AuthenticatedStaticSiteStack } from "./authenticated-static-site-stack";
 
 export class PublishedAuthenticatedStaticSiteStack extends AuthenticatedStaticSiteStack {
-  constructor(scope: cdk.Construct, id: string, props: StaticSiteStackProps) {
+  constructor(scope: Construct, id: string, props: StaticSiteStackProps) {
     super(scope, id, props);
 
     const sourceOutput = new codepipeline.Artifact();

@@ -3,12 +3,15 @@
  * against a CloudFront distribution and Cognito User Pool created in CDK
  */
 
-import * as cdk from "@aws-cdk/core";
-import * as sam from "@aws-cdk/aws-sam";
-import * as cognito from "@aws-cdk/aws-cognito";
-import * as lambda from "@aws-cdk/aws-lambda";
-import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as origins from "@aws-cdk/aws-cloudfront-origins";
+import { IConstruct } from "constructs";
+import * as cdk from "aws-cdk-lib";
+import {
+  aws_sam as sam,
+  aws_cognito as cognito,
+  aws_lambda as lambda,
+  aws_cloudfront as cloudfront,
+  aws_cloudfront_origins as origins,
+} from "aws-cdk-lib";
 
 interface AuthEdgeprops {
   cloudFrontDistribution: cloudfront.Distribution;
@@ -165,7 +168,7 @@ class AddLambdaEdgeToDefaultBehavior implements cdk.IAspect {
       }[];
     }
   ) {}
-  public visit(node: cdk.IConstruct): void {
+  public visit(node: IConstruct): void {
     if (node instanceof cloudfront.CfnDistribution) {
       node.addPropertyOverride(
         "DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations",
