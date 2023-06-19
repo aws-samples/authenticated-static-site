@@ -12,7 +12,7 @@
     "prettier": "npx prettier -w bin lib"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.41.0",
+    "aws-cdk-lib": "^2.80.0",
     "constructs": "^10.1.94",
     "source-map-support": "^0.5.19"
   },
